@@ -1,0 +1,23 @@
+# Luật 4: Cấm hostNetwork: true
+# Template tối giản, tự chứa — chặn khi pod bật hostNetwork.
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblockhostnetwork
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    metadata.gatekeeper.sh/title: "Block hostNetwork"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockHostNetwork
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblockhostnetwork
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostNetwork == true
+          msg := sprintf("Pod <%v> đặt hostNetwork: true — không cho phép", [input.review.object.metadata.name])
+        }

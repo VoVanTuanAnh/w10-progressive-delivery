@@ -1,0 +1,33 @@
+# ArgoCD App: Quản 4 ConstraintTemplate + 4 Constraint
+# sync-wave -2: chạy SAU controller (-5) nhưng TRƯỚC workload.
+# Trong app: template (sync-wave 1) -> constraint (sync-wave 2).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gatekeeper-policies
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/VoVanTuanAnh/w10-progressive-delivery.git
+    path: gatekeeper
+    targetRevision: main
+    directory:
+      recurse: true   # gom cả templates/ và constraints/
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gatekeeper-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+    - ServerSideApply=true

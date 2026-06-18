@@ -1,0 +1,36 @@
+# Luật 3 (F-04): Cấm runAsUser: 0 (chạy root)
+# Template tối giản, tự chứa — chỉ chặn khi runAsUser được set = 0
+# (ở pod-level hoặc container-level). Không bắt buộc mọi pod phải khai báo user.
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblockrootuser
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    metadata.gatekeeper.sh/title: "Block runAsUser 0"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockRootUser
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblockrootuser
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.securityContext.runAsUser == 0
+          msg := sprintf("Pod <%v> đặt runAsUser: 0 (root) — không cho phép", [input.review.object.metadata.name])
+        }
+
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          c.securityContext.runAsUser == 0
+          msg := sprintf("container <%v> đặt runAsUser: 0 (root) — không cho phép", [c.name])
+        }
+
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.initContainers[_]
+          c.securityContext.runAsUser == 0
+          msg := sprintf("init container <%v> đặt runAsUser: 0 (root) — không cho phép", [c.name])
+        }

@@ -1,0 +1,20 @@
+# Constraint cho luật 2: bắt buộc có cpu + memory limits.
+# Đặt trần rộng (cpu 8, memory 16Gi) -> thực chất chỉ ép "phải có limits";
+# workload bình thường (api: 200m / 128Mi) vẫn lọt.
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sContainerLimits
+metadata:
+  name: require-resource-limits
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  match:
+    kinds:
+    - apiGroups: [""]
+      kinds: ["Pod"]
+    namespaces:
+    - demo
+  parameters:
+    cpu: "8"
+    memory: "16Gi"

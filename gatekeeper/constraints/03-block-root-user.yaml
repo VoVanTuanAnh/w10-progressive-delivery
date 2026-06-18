@@ -1,0 +1,15 @@
+# Constraint cho luật 3: cấm runAsUser: 0 trong ns demo
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sBlockRootUser
+metadata:
+  name: block-root-user
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  match:
+    kinds:
+    - apiGroups: [""]
+      kinds: ["Pod"]
+    namespaces:
+    - demo

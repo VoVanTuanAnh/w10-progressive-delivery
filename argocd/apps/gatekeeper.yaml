@@ -1,0 +1,31 @@
+# ArgoCD App: Cài OPA Gatekeeper controller qua Helm
+# sync-wave -5: cài SỚM NHẤT, trước ConstraintTemplate/Constraint và mọi workload
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gatekeeper
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  project: default
+  source:
+    repoURL: https://open-policy-agent.github.io/gatekeeper/charts
+    chart: gatekeeper
+    targetRevision: 3.22.2
+    helm:
+      releaseName: gatekeeper
+      values: |
+        replicas: 1
+        # Bỏ qua chính các namespace hệ thống để webhook không tự chặn
+        # (controller cũng tự exempt gatekeeper-system).
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gatekeeper-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
