@@ -1,5 +1,5 @@
-# Lab 5: app-of-apps root
-# Root App: App of Apps pattern - quản lý tất cả child applications
+﻿# Lab 5: app-of-apps root
+# Root App: App of Apps pattern - quáº£n lÃ½ táº¥t cáº£ child applications
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Vuong-Bach/temp.git
+    repoURL: https://github.com/VoVanTuanAnh/w10-progressive-delivery.git
     path: argocd/apps
     targetRevision: main
   destination:
