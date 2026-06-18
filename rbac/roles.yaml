@@ -1,0 +1,48 @@
+# Lab 1.1 · RBAC — định nghĩa 3 vai trò
+# alice (developer): bó trong 1 namespace -> Role
+# bob (sre) / carol (viewer): toàn cụm -> ClusterRole
+---
+# developer: CRUD workload (deploy/pod/service) — CHỈ trong ns demo
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+  namespace: demo
+  labels:
+    app: rbac
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "services"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# sre: xem + thao tác pod TOÀN CỤM (mọi namespace)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre
+  labels:
+    app: rbac
+rules:
+# Thao tác pod toàn cụm
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "pods/exec", "pods/eviction"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# Xem ngữ cảnh xung quanh pod (read-only)
+- apiGroups: [""]
+  resources: ["nodes", "namespaces", "services", "events"]
+  verbs: ["get", "list", "watch"]
+---
+# viewer: CHỈ đọc (get/list/watch) — toàn cụm
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: viewer
+  labels:
+    app: rbac
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
