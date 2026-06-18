@@ -12,6 +12,10 @@ spec:
   selector:
     matchLabels:
       app: api
+  # Copy nhãn `app` từ Service vào metric để query trong AnalysisTemplate
+  # (flask_http_request_duration_seconds_count{app="api"}) khớp được series.
+  targetLabels:
+    - app
   endpoints:
   - port: http
     path: /metrics
