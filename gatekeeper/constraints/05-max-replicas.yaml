@@ -13,5 +13,6 @@ spec:
       kinds: ["Deployment"]
     namespaces:
     - demo
+    - payments
   parameters:
     max: 5

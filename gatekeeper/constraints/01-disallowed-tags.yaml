@@ -13,5 +13,6 @@ spec:
       kinds: ["Pod"]
     namespaces:
     - demo
+    - payments
   parameters:
     tags: ["latest"]

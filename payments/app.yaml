@@ -1,0 +1,48 @@
+# App của team B. Dùng image ĐÃ KÝ (0.0.3) + đủ limits + tag pin + không root
+# -> qua hết guardrail cũ: cosign verify, require-limits, no-latest, no-root...
+# Đây là minh chứng "app hợp lệ chạy xanh" mà KHÔNG cần viết luật mới cho team B.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-api
+  namespace: payments
+  labels:
+    app: payments-api
+    team: payments
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"   # sau quota/limitrange/rbac
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-api
+  template:
+    metadata:
+      labels:
+        app: payments-api
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/vovantuananh/w10-api:0.0.3   # image đã ký bằng cosign
+        ports:
+        - containerPort: 8080
+        env:
+        - name: VERSION
+          value: "payments-v1"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

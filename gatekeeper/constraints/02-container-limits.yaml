@@ -15,6 +15,7 @@ spec:
       kinds: ["Pod"]
     namespaces:
     - demo
+    - payments
   parameters:
     cpu: "8"
     memory: "16Gi"

@@ -1,0 +1,25 @@
+# ArgoCD App: deploy toàn bộ "phòng riêng" team B qua GitOps.
+# 1 Application riêng -> team B tự quản phần của mình trong thư mục payments/.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: payments
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/VoVanTuanAnh/w10-progressive-delivery.git
+    path: payments
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: payments
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true

@@ -1,0 +1,36 @@
+# Least-privilege cho team B: chỉ thao tác WORKLOAD, BÓ trong ns payments.
+# Dùng Role + RoleBinding (KHÔNG ClusterRoleBinding) -> quyền không "với" sang demo.
+# Cố ý KHÔNG cấp: secrets (đọc bí mật) và roles/rolebindings (tự nâng quyền).
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: payments-dev
+  namespace: payments
+  labels:
+    team: payments
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "services", "configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# KHÔNG có rule cho "secrets" -> payments-dev không đọc được secret
+# KHÔNG có rule cho "roles"/"rolebindings" -> không sửa được phân quyền
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: payments-dev
+  namespace: payments
+  labels:
+    team: payments
+subjects:
+- kind: User
+  name: payments-dev
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role            # Role (namespaced) -> chỉ có hiệu lực trong ns payments
+  name: payments-dev
+  apiGroup: rbac.authorization.k8s.io

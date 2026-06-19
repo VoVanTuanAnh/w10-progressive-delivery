@@ -1,0 +1,33 @@
+# Ngân sách tài nguyên cho cả ns payments + default limit cho pod thiếu khai báo.
+---
+# ResourceQuota: tổng CPU/RAM team B được dùng. Pod xin vượt -> bị từ chối.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: payments-quota
+  namespace: payments
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    pods: "10"
+---
+# LimitRange: pod KHÔNG khai limits vẫn chạy được nhờ default này tự gán vào.
+# (LimitRanger chạy ở pha mutating, TRƯỚC khi ResourceQuota/Gatekeeper kiểm tra
+#  -> pod được vá đủ limits rồi mới bị soi -> vừa qua quota vừa qua Gatekeeper.)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: payments-limits
+  namespace: payments
+spec:
+  limits:
+  - type: Container
+    default:               # limits mặc định nếu pod không khai
+      cpu: 200m
+      memory: 256Mi
+    defaultRequest:        # requests mặc định
+      cpu: 100m
+      memory: 128Mi
