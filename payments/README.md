@@ -47,6 +47,29 @@ Vì vậy tenant phải dùng RoleBinding bó trong ns.
 > Ngoài ra Role cố ý **không** cấp `secrets` (đọc bí mật) và `roles/rolebindings`
 > (tự nâng quyền) — least-privilege.
 
+## Task 3 — NetworkPolicy: trạng thái enforce
+
+2 NetworkPolicy (`default-deny-ingress` + `egress-same-ns-and-dns`) **đã được
+tạo qua GitOps** và **đúng chuẩn**. NHƯNG NetworkPolicy chỉ được **thực thi bởi
+CNI**; minikube với CNI mặc định **không enforce** — policy tồn tại nhưng không
+chặn lưu lượng thật.
+
+Để enforce thật (chứng minh "payments gọi service `api` của demo bị chặn"):
+```bash
+# Tạo lại cluster với Calico:
+minikube delete -p w10
+minikube start -p w10 --cni=calico --cpus=6 --memory=4096
+# rồi bootstrap lại ArgoCD + apply root.yaml -> mọi thứ (gồm NetworkPolicy này) tự lên.
+
+# Khi đã có Calico, test chặn egress sang demo:
+kubectl -n payments run probe --image=busybox:1.36 --restart=Never -- \
+  sh -c "wget -T3 -qO- http://api.demo.svc.cluster.local || echo BLOCKED"
+# -> BLOCKED (egress policy chỉ cho cùng-ns + DNS)
+```
+
+> Quyết định trong lab này: **giữ cluster hiện tại** (đang chạy nhiều lab khác) →
+> manifest đúng & nằm trong GitOps, nhưng chưa demo chặn live vì chưa bật Calico.
+
 ## Nghiệm thu nhanh
 
 ```bash

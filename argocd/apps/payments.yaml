@@ -16,6 +16,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: payments
+  # policy-controller (cosign) pin image -> digest sau khi verify -> bỏ qua khác biệt
+  # ở field image để ArgoCD không báo OutOfSync.
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jqPathExpressions:
+    - .spec.template.spec.containers[].image
   syncPolicy:
     automated:
       prune: true
