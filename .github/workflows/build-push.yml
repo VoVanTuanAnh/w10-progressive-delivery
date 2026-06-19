@@ -71,13 +71,13 @@ jobs:
       # Scan theo digest (immutable). exit-code 1 -> job FAIL -> step Cosign sign
       # phia duoi KHONG chay -> image co CVE se khong bao gio duoc ky.
       - name: Trivy scan (fail on HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@v0.30.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name }}@${{ steps.build.outputs.digest }}
-          format: table
-          exit-code: '1'
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          trivy image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name }}@${{ steps.build.outputs.digest }}
 
       # (b) F-06: Cai cosign + ky image SAU khi scan sach.
       - name: Install Cosign
