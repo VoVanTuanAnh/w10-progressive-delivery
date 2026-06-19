@@ -71,7 +71,7 @@ jobs:
       # Scan theo digest (immutable). exit-code 1 -> job FAIL -> step Cosign sign
       # phia duoi KHONG chay -> image co CVE se khong bao gio duoc ky.
       - name: Trivy scan (fail on HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.30.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name }}@${{ steps.build.outputs.digest }}
           format: table
