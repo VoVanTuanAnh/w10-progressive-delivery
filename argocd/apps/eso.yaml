@@ -1,0 +1,51 @@
+# ArgoCD App: Cài External Secrets Operator (ESO) qua Helm
+# sync-wave -4: cài SỚM để có CRD (SecretStore/ExternalSecret) trước khi eso-config sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eso
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 2.6.0
+    helm:
+      releaseName: external-secrets
+      values: |
+        installCRDs: true
+        replicaCount: 1
+        # Trim cho cluster minikube nhỏ
+        resources:
+          requests:
+            cpu: 25m
+            memory: 96Mi
+          limits:
+            memory: 192Mi
+        webhook:
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+        certController:
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true

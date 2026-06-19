@@ -1,0 +1,31 @@
+# ArgoCD App: sync thư mục eso/ (SecretStore + ExternalSecret + demo consumer)
+# sync-wave -1: chạy SAU khi ESO operator (-4) đã cài CRD. Đừng sync 1 lượt
+# với operator, nếu không sẽ lỗi "no matches for kind SecretStore".
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eso-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/VoVanTuanAnh/w10-progressive-delivery.git
+    path: eso
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+    - ServerSideApply=true
