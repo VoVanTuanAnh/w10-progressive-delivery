@@ -4,6 +4,10 @@ k8s-monitoring/alertmanager-config.yaml
 **/email-secret.yaml
 *.secret.yaml
 
+# Cosign private key - DO NOT COMMIT (chỉ cosign.pub được commit)
+cosign.key
+*.key
+
 # IDE
 .vscode/
 .idea/

@@ -1,0 +1,21 @@
+# Luật verify chữ ký: image api PHẢI được ký bằng khóa cosign của bạn.
+# Image khớp glob này mà không có chữ ký hợp lệ -> admission TỪ CHỐI.
+# Chỉ enforce trên namespace có label policy.sigstore.dev/include=true.
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: require-signed-api
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  images:
+  - glob: "ghcr.io/vovantuananh/w10-api**"
+  authorities:
+  - name: cosign-key
+    key:
+      # >>> DÁN NỘI DUNG signing/cosign.pub VÀO ĐÂY (giữ nguyên 2 dòng BEGIN/END) <<<
+      data: |
+        -----BEGIN PUBLIC KEY-----
+        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhhZcw7+wE7RiBCmONjRzikt5xYSm
+        1HOtu4jiGsifoDiaHABYesKh66qX+wZTNguQhV7S8ZUMB9QPcgKP3bOutg==
+        -----END PUBLIC KEY-----

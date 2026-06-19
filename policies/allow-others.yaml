@@ -1,0 +1,18 @@
+# Cho qua mọi image KHÁC (busybox, nginx...) trong ns được enforce.
+# Vì no-match-policy mặc định = deny: nếu không có luật này, gắn label vào demo
+# sẽ chặn luôn db-consumer (busybox) và các pod khác.
+# Image api vẫn khớp CẢ luật này (static pass) LẪN require-signed-api (cần chữ ký)
+# -> policy-controller yêu cầu thoả MỌI luật khớp -> api vẫn buộc phải ký.
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: allow-unmatched
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  images:
+  - glob: "**"
+  authorities:
+  - name: allow-all
+    static:
+      action: pass

@@ -1,0 +1,36 @@
+# ArgoCD App: Cài Sigstore Policy Controller (admission verify chữ ký cosign)
+# sync-wave -4: cài SỚM để có CRD ClusterImagePolicy trước khi policies sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policy-controller
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+spec:
+  project: default
+  source:
+    repoURL: https://sigstore.github.io/helm-charts
+    chart: policy-controller
+    targetRevision: 0.10.6
+    helm:
+      releaseName: policy-controller
+      values: |
+        # Trim resource cho cluster minikube nhỏ
+        webhook:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cosign-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true

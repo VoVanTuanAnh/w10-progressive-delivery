@@ -59,12 +59,39 @@ jobs:
             type=sha,prefix=v${{ steps.semver.outputs.version }}-
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: ./src/api
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      # (a) F-05: Trivy scan -> fail pipeline neu co CVE HIGH/CRITICAL.
+      # Scan theo digest (immutable). exit-code 1 -> job FAIL -> step Cosign sign
+      # phia duoi KHONG chay -> image co CVE se khong bao gio duoc ky.
+      - name: Trivy scan (fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name }}@${{ steps.build.outputs.digest }}
+          format: table
+          exit-code: '1'
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+
+      # (b) F-06: Cai cosign + ky image SAU khi scan sach.
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      # Ky theo DIGEST -> bao trum moi tag tro toi digest do (latest, <version>, sha).
+      # => dung tag ma Rollout dang dung, khong chi ky :latest (tranh bay cua de bai).
+      - name: Cosign sign image
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY \
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.image_name }}@${{ steps.build.outputs.digest }}
 
       - name: Update rollout.yaml with new version
         run: |

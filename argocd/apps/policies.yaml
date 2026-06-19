@@ -1,0 +1,30 @@
+# ArgoCD App: sync thư mục policies/ (các ClusterImagePolicy)
+# sync-wave -1: chạy SAU policy-controller (-4) đã cài CRD.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policies
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/VoVanTuanAnh/w10-progressive-delivery.git
+    path: policies
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cosign-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+    - ServerSideApply=true
